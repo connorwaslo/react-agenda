@@ -47,8 +47,6 @@ export default class ReactAgenda extends Component {
       focusedCell: null
     };
     this.handleBeforeUpdate = this.handleBeforeUpdate.bind(this);
-    this.handleOnNextButtonClick = this.handleOnNextButtonClick.bind(this);
-    this.handleOnPrevButtonClick = this.handleOnPrevButtonClick.bind(this);
     this.handleMouseClick = this.handleMouseClick.bind(this);
     this.handleMouseOver = this.handleMouseOver.bind(this);
     this.removeSelection = this.removeSelection.bind(this);
@@ -189,42 +187,6 @@ export default class ReactAgenda extends Component {
       this.setState({
         maxDate: moment(props.maxDate)
       });
-    }
-  }
-
-  handleOnNextButtonClick() {
-    var nextStartDate = moment(this.state.date).add(this.state.numberOfDays, 'days');
-    if (this.state.hasOwnProperty('maxDate')) {
-      nextStartDate = moment.min(nextStartDate, this.state.maxDate);
-    }
-
-    var newStart = nextStartDate;
-    var newEnd = moment(newStart).add(this.state.numberOfDays - 1, 'days');
-
-    if (nextStartDate !== this.state.date) {
-      this.setState({date: nextStartDate});
-    }
-
-    if (this.props.onDateRangeChange) {
-      this.props.onDateRangeChange(newStart.startOf('day').toDate(), newEnd.endOf('day').toDate());
-    }
-  }
-
-  handleOnPrevButtonClick() {
-    var prevStartDate = moment(this.state.date).subtract(this.state.numberOfDays, 'days');
-    if (this.state.hasOwnProperty('minDate')) {
-      prevStartDate = moment.max(prevStartDate, this.state.minDate);
-    }
-
-    var newStart = prevStartDate;
-    var newEnd = moment(newStart).add(this.state.numberOfDays - 1, 'days');
-
-    if (prevStartDate !== this.state.date) {
-      this.setState({date: prevStartDate});
-    }
-
-    if (this.props.onDateRangeChange) {
-      this.props.onDateRangeChange(newStart.toDate(), newEnd.toDate());
     }
   }
 
@@ -873,12 +835,7 @@ export default class ReactAgenda extends Component {
               <tr>
                 <th ref="column-0" className="agenda__cell --controls">
                   <div className="agenda-controls-layout">
-                     <button className={"agenda__prev" + (disablePrev(this.state)
-                       ? " --disabled"
-                       : "")} onClick={this.handleOnPrevButtonClick}></button>
-                     <button className={"agenda__next" + (disableNext(this.state)
-                       ? " --disabled"
-                       : "")} onClick={this.handleOnNextButtonClick}></button>
+                  {/*   Todo: Fill this with Schedule title?   */}
                   </div>
                 </th>
                 {this.getHeaderColumns(this.props.view).map(renderHeaderColumns, this)}
