@@ -111,8 +111,13 @@ export default class ReactAgenda extends Component {
   /********************/
   getHeaderColumns() {
     var cols = [];
-    for (var i = 0; i < this.state.numberOfDays; i++) {
-      cols.push(moment(this.state.date).add(i, 'days').toDate());
+
+    if (this.state.numberOfDays === 5) {
+      cols = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday']
+    } else {
+      for (var i = 0; i < this.state.numberOfDays; i++) {
+        cols.push(moment(this.state.date).add(i, 'days').toDate());
+      }
     }
     return cols;
   }
