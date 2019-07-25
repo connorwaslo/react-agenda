@@ -1,7 +1,7 @@
 {
-  "name": "react-agenda",
+  "name": "vandy-agenda",
   "version": "0.0.8",
-  "description": "An advanced agenda / organizer built with react",
+  "description": "A weekly class schedule / Built with react-agenda",
   "main": "build/index.js",
   "peerDependencies": {
     "moment": "^2.0.1",
