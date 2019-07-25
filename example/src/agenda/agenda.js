@@ -3,10 +3,10 @@ import React, { Component } from 'react';
 import moment from 'moment';
 import { ReactAgenda , ReactAgendaCtrl, guid , getUnique , getLast , getFirst , Modal } from 'react-agenda';
 
-var now = new Date();
+let now = new Date();
 
 require('moment/locale/fr.js');
-    var colors= {
+    let colors= {
       'color-1':"rgba(102, 195, 131 , 1)" ,
       "color-2":"rgba(242, 177, 52, 1)" ,
       "color-3":"rgba(235, 85, 59, 1)" ,
@@ -15,7 +15,7 @@ require('moment/locale/fr.js');
     }
 
 
-var items = [
+let items = [
   {
    _id            :guid(),
     name          : 'Meeting , dev staff!',
@@ -125,11 +125,11 @@ componentWillReceiveProps(next , last){
   }
 
   zoomIn(){
-var num = this.state.cellHeight + 15
+let num = this.state.cellHeight + 15
     this.setState({cellHeight:num})
   }
   zoomOut(){
-var num = this.state.cellHeight - 15
+let num = this.state.cellHeight - 15
     this.setState({cellHeight:num})
   }
 
@@ -192,7 +192,7 @@ this.setState({numberOfDays:days})
 
   render() {
 
-    var AgendaItem = function(props){
+    let AgendaItem = function(props){
       console.log( ' item component props' , props)
       return <div style={{display:'block', position:'absolute' , background:'#FFF'}}>{props.item.name} <button onClick={()=> props.edit(props.item)}>Edit </button></div>
     }

@@ -28,10 +28,10 @@ export default class ReactAgendaItem extends Component {
   }
 
   updateDimensions() {
-var elem = document.getElementById(this.props.parent)
+let elem = document.getElementById(this.props.parent)
 if(elem){
-  var nwidh = (elem.offsetWidth / 1.4)
-  var nmrgl = this.props.padder > 0
+  let nwidh = (elem.offsetWidth / 1.4)
+  let nmrgl = this.props.padder > 0
     ? (nwidh / 5) + this.props.padder * 8
     : (nwidh / 5)
 
@@ -69,7 +69,7 @@ if(elem){
     let sty = this.state.wrapper;
 
     if (sty.zIndex === 8) {
-      var newState = { wrapper: Object.assign({} , sty , {zIndex:5} ) };
+      let newState = { wrapper: Object.assign({} , sty , {zIndex:5} ) };
       return this.setState(newState)
     }
 
@@ -79,7 +79,7 @@ if(elem){
 
     if (sty.zIndex === 5) {
 
-      var newState = { wrapper: Object.assign({} , sty , {zIndex:8} )};
+      let newState = { wrapper: Object.assign({} , sty , {zIndex:8} )};
       return this.setState(newState)
     }
 
@@ -87,9 +87,9 @@ if(elem){
 
   render() {
 
-    var duratH = moment.duration(this.props.item.duration._milliseconds, 'Milliseconds').humanize();
-    var duratL = moment(this.props.item.startDateTime).format("HH:mm")
-    var duratE = moment(this.props.item.endDateTime).format("HH:mm")
+    let duratH = moment.duration(this.props.item.duration._milliseconds, 'Milliseconds').humanize();
+    let duratL = moment(this.props.item.startDateTime).format("HH:mm")
+    let duratE = moment(this.props.item.endDateTime).format("HH:mm")
 
     return <div style={this.state.wrapper} className="agenda-cell-item" onMouseEnter={this.raiseZindex} onMouseLeave={this.lowerZindex}>
 

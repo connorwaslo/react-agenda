@@ -1,7 +1,7 @@
-var path = require('path');
-var webpack = require('webpack');
-var nodeExternals = require('webpack-node-externals');
-var ExtractTextPlugin = require("extract-text-webpack-plugin");
+let path = require('path');
+let webpack = require('webpack');
+let nodeExternals = require('webpack-node-externals');
+let ExtractTextPlugin = require("extract-text-webpack-plugin");
 module.exports = {
   entry: './src/index.js',
   output: {

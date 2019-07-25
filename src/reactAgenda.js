@@ -6,16 +6,16 @@ import classNames from 'classnames';
 import {guid, getUnique, getLast, getFirst , mapItems} from './helpers.js';
 import * as DragDropHelper from './dragAndDropHelper.js';
 
-var startSelect
-var endSelect
-var isDragging = false;
-var isMouseDown = false;
-var draggedElement;
-var timeNow = moment();
-var draggedItem;
-var ctrlKey = false;
+let startSelect
+let endSelect
+let isDragging = false;
+let isMouseDown = false;
+let draggedElement;
+let timeNow = moment();
+let draggedItem;
+let ctrlKey = false;
 
-var DEFAULT_ITEM = {
+let DEFAULT_ITEM = {
   name: '',
   classes: '',
   cellRefs: []
@@ -23,14 +23,14 @@ var DEFAULT_ITEM = {
 
 
 
-    var mouse = {
+    let mouse = {
         x: 0,
         y: 0,
         startX: 0,
         startY: 0
     };
-    var element = null;
-    var helper = null;
+    let element = null;
+    let helper = null;
 
 
 export default class ReactAgenda extends Component {
@@ -100,7 +100,7 @@ export default class ReactAgenda extends Component {
   }
 
   updateDimensions() {
-    var width = Math.round((document.getElementById('agenda-wrapper').offsetWidth / 150 ) - 1)
+    let width = Math.round((document.getElementById('agenda-wrapper').offsetWidth / 150 ) - 1)
     this.setState({autoScaleNumber:width , numberOfDays:width})
   }
 
@@ -108,12 +108,12 @@ export default class ReactAgenda extends Component {
   /*  Item Renderers  */
   /********************/
   getHeaderColumns() {
-    var cols = [];
+    let cols = [];
 
     if (this.state.numberOfDays === 5) {
       cols = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday']
     } else {
-      for (var i = 0; i < this.state.numberOfDays; i++) {
+      for (let i = 0; i < this.state.numberOfDays; i++) {
         cols.push(moment(this.state.date).add(i, 'days').toDate());
       }
     }
@@ -121,11 +121,11 @@ export default class ReactAgenda extends Component {
   }
 
   getBodyRows() {
-    var rows = [];
-    var interval = (60 / this.props.rowsPerHour);
+    let rows = [];
+    let interval = (60 / this.props.rowsPerHour);
    
     if(this.props.startAtTime && typeof this.props.startAtTime === "number" ){
-         for (var i = 0; i < 24 * this.props.rowsPerHour; i++) {
+         for (let i = 0; i < 24 * this.props.rowsPerHour; i++) {
           if(this.props.endAtTime != 0 && (this.props.endAtTime - this.props.startAtTime) * this.props.rowsPerHour  >=  i ){
            rows.push(moment(this.state.date).hours(this.props.startAtTime).minutes(0).seconds(0).milliseconds(0).add(Math.floor(i * interval), 'minutes'));  
           }
@@ -135,7 +135,7 @@ export default class ReactAgenda extends Component {
 
     }
     
-    for (var i = 0; i < 24 * this.props.rowsPerHour; i++) {
+    for (let i = 0; i < 24 * this.props.rowsPerHour; i++) {
       rows.push(moment(this.state.date).hours(7).minutes(0).seconds(0).milliseconds(0).add(Math.floor(i * interval), 'minutes'));
     }
     return rows;
@@ -143,9 +143,9 @@ export default class ReactAgenda extends Component {
   }
 
   getMinuteCells(rowMoment) {
-    var cells = [];
-    for (var i = 0; i < this.state.numberOfDays; i++) {
-      var cellRef = moment(rowMoment).add(i, 'days').format('YYYY-MM-DDTHH:mm:ss');
+    let cells = [];
+    for (let i = 0; i < this.state.numberOfDays; i++) {
+      let cellRef = moment(rowMoment).add(i, 'days').format('YYYY-MM-DDTHH:mm:ss');
       cells.push({
         cellRef: cellRef,
         item: this.state.items[cellRef] || DEFAULT_ITEM
@@ -194,11 +194,11 @@ export default class ReactAgenda extends Component {
 
 
     if (typeof cell != "string" && cell.tagName) {
-      var dt = moment(cell.innerText, ["h:mm A"]).format("HH");
-      var old = parseInt(dt)
-      var now = new Date();
-      var newdate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), old + 1, 0)
-      var mom = newdate.toISOString().substring(0, newdate.toISOString().length - 5)
+      let dt = moment(cell.innerText, ["h:mm A"]).format("HH");
+      let old = parseInt(dt)
+      let now = new Date();
+      let newdate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), old + 1, 0)
+      let mom = newdate.toISOString().substring(0, newdate.toISOString().length - 5)
     if(this.props.onCellSelect) {
         return this.props.onCellSelect(mom, bypass);
       }
@@ -211,7 +211,7 @@ export default class ReactAgenda extends Component {
 
 
   setMousePosition(e) {
-        var ev = e || window.event; //Moz || IE
+        let ev = e || window.event; //Moz || IE
         if (ev.pageX) { //Moz
             mouse.x = ev.pageX + window.pageXOffset;
             mouse.y = ev.pageY + window.pageYOffset;
@@ -244,8 +244,8 @@ export default class ReactAgenda extends Component {
              helper.style.left = mouse.x  + 'px';
             helper.style.top = (mouse.y - 10 ) + 'px';
             if(e.target.classList.contains("agenda__cell") && !e.target.classList.contains("--time")){
-                var strt =  moment(startSelect)
-                var endd =   moment(e.target.id)
+                let strt =  moment(startSelect)
+                let endd =   moment(e.target.id)
               helper.innerHTML =endd.diff(strt) > 0? strt.format('LT') + ' -- ' + endd.format('LT'): endd.format('LT') + ' -- ' + strt.format('LT')
             }
           
@@ -254,9 +254,9 @@ export default class ReactAgenda extends Component {
 
   removeSelection() {
 
-    var old = document.getElementsByClassName('agenda__cell_selected')
+    let old = document.getElementsByClassName('agenda__cell_selected')
 
-    for (var i = old.length - 1; i >= 0; --i) {
+    for (let i = old.length - 1; i >= 0; --i) {
       if (old[i]) {
         old[i].classList.remove('agenda__cell_selected');
       }
@@ -308,16 +308,16 @@ export default class ReactAgenda extends Component {
 
     endSelect = e.target.id
 
-   var old = document.getElementsByClassName('rectangle')
-   var old2 = document.getElementsByClassName('helper-reactangle')
+   let old = document.getElementsByClassName('rectangle')
+   let old2 = document.getElementsByClassName('helper-reactangle')
     
-     for (var i = old.length - 1; i >= 0; --i) {
+     for (let i = old.length - 1; i >= 0; --i) {
       if (old[i]) {
         old[i].remove();
       }
     }
 
-       for (var i = old2.length - 1; i >= 0; --i) {
+       for (let i = old2.length - 1; i >= 0; --i) {
       if (old2[i]) {
         old2[i].remove();
       }
@@ -398,21 +398,21 @@ export default class ReactAgenda extends Component {
     if(!this.props.onChangeEvent){
       return;
     }
-    var date = d;
-    var itm;
+    let date = d;
+    let itm;
     if (!this.refs[d]) {
       return;
     }
     if (this.refs[d].tagName !== 'TD') { // when user drag and drop an event into another we assign parent id
       date = this.refs[d].parentNode.id;
     }
-    var items = this.props.items
+    let items = this.props.items
     if (id && date && items) {
-      for (var i in items) {
+      for (let i in items) {
         if (items[i]._id === id) {
-          var start = moment(items[i].startDateTime);
-          var end = moment(items[i].endDateTime);
-          var duration = moment.duration(end.diff(start));
+          let start = moment(items[i].startDateTime);
+          let end = moment(items[i].endDateTime);
+          let duration = moment.duration(end.diff(start));
           let newdate = moment(date).subtract((duration % (60 / this.state.rowsPerHour)))
           let newEnddate = moment(newdate).add(duration)
           items[i].startDateTime = new Date(newdate)
@@ -426,23 +426,23 @@ export default class ReactAgenda extends Component {
   }
 
   duplicateEvent(id, d) {
-    var date = d;
-    var itm;
-    var oldItm;
+    let date = d;
+    let itm;
+    let oldItm;
     if (!this.refs[d]) {
       return;
     }
     if (this.refs[d].tagName !== 'TD') { // when user drag and drop an event into another we assign parent id
       date = this.refs[d].parentNode.id;
     }
-    var items = this.props.items
+    let items = this.props.items
     if (id && date && items) {
-      for (var i in items) {
+      for (let i in items) {
         if (items[i]._id === id) {
           itm = Object.assign({} , items[i] , {_id:guid()} );
-          var start = moment(itm.startDateTime);
-          var end = moment(itm.endDateTime);
-          var duration = moment.duration(end.diff(start));
+          let start = moment(itm.startDateTime);
+          let end = moment(itm.endDateTime);
+          let duration = moment.duration(end.diff(start));
           let newdate = moment(date)
           let newEnddate = moment(newdate).add(duration)
           itm.startDateTime = new Date(newdate)
@@ -463,13 +463,13 @@ export default class ReactAgenda extends Component {
         return;
     }
 
-    var items = this.props.items;
+    let items = this.props.items;
     if (id && date && items) {
 
 
-      for (var i in items ) {
+      for (let i in items ) {
         if (items[i]._id === id) {
-          var difference = new Date(date) - new Date(items[i].startDateTime)
+          let difference = new Date(date) - new Date(items[i].startDateTime)
           if (difference < 1) {
             let strt = new Date(items[i].startDateTime)
             items[i].endDateTime = new Date(strt.getFullYear(), strt.getMonth(), strt.getDate(), strt.getHours(), strt.getMinutes() + 15, 0);
@@ -538,7 +538,7 @@ export default class ReactAgenda extends Component {
     }
 
     if (!this.refs[draggedElement] && draggedElement) { //detect if we are dragging an event from its description panel (item component)
-      var old = document.getElementById(draggedElement)
+      let old = document.getElementById(draggedElement)
       draggedElement = old.parentNode.id;
     }
 
@@ -556,24 +556,24 @@ export default class ReactAgenda extends Component {
 
   getSelection(start , end) {
 
-    // var array = [];
-    // var array2 = [];
-    // var old = document.getElementsByClassName('agenda__cell_selected')
+    // let array = [];
+    // let array2 = [];
+    // let old = document.getElementsByClassName('agenda__cell_selected')
 
     // array = Object.keys(old).map(function(value, index) {
     //   return old[value].id;
     // })
-    // var last = moment(getLast(array));
-    // var addon = last.add((60 / this.props.rowsPerHour), 'Minutes')
+    // let last = moment(getLast(array));
+    // let addon = last.add((60 / this.props.rowsPerHour), 'Minutes')
     // array.push(addon.format('YYYY-MM-DDTHH:mm:00'))
 
     // if (this.props.onRangeSelection) {
     //   console.log('array' , array)
     //   this.props.onRangeSelection(array);
     // }
-   var strt =  moment(start)
-   var endd =   moment(end)
-  var arr = endd.diff(strt) >0?[start,end]:[end,start];    
+   let strt =  moment(start)
+   let endd =   moment(end)
+  let arr = endd.diff(strt) >0?[start,end]:[end,start];
 
     this.props.onRangeSelection(arr);
 
@@ -591,8 +591,8 @@ export default class ReactAgenda extends Component {
   }
 
   removeEvent(item) {
-    var items = this.props.items;
-    var newItems = items.filter(function(el) {
+    let items = this.props.items;
+    let newItems = items.filter(function(el) {
       return el._id !== item._id;
     });
     if (this.props.onItemRemove) {
@@ -602,22 +602,18 @@ export default class ReactAgenda extends Component {
 
   render() {
 
-    var renderHeaderColumns = function(col, i) {
-      var headerLabel = moment(col);
-      headerLabel.locale(this.props.locale);
+    let renderHeaderColumns = function(col, i) {
       return <th ref={"column-" + (i + 1)} key={"col-" + i} className="agenda__cell --head">
-        {this.props.headFormat
-          ? headerLabel.format(this.props.headFormat)
-          : headerLabel.format('dddd DD MMM YY')}
+        {col}
       </th>
 
     };
 
-    var renderBodyRows = function(row, i) {
+    let renderBodyRows = function(row, i) {
       if (i % this.props.rowsPerHour === 0 ) {
-        var ref = "hour-" + Math.floor(i / this.props.rowsPerHour);
-        var timeLabel = moment(row);
-        var differ = timeLabel.diff(timeNow, 'minutes')
+        let ref = "hour-" + Math.floor(i / this.props.rowsPerHour);
+        let timeLabel = moment(row);
+        let differ = timeLabel.diff(timeNow, 'minutes')
 
         timeLabel.locale(this.props.locale);
         return (
@@ -638,17 +634,17 @@ export default class ReactAgenda extends Component {
       }
     };
 
-    var itmName
+    let itmName
 
-    var Colors = this.props.itemColors
+    let Colors = this.props.itemColors
 
-    var ItemComponent = this.props.itemComponent
+    let ItemComponent = this.props.itemComponent
       ? this.props.itemComponent
       : ReactAgendaItem;
 
-    var renderItemCells = function(cell, i) {
+    let renderItemCells = function(cell, i) {
 
-      var cellClasses = {
+      let cellClasses = {
         'agenda__cell': true
       };
       cell['item'].forEach(function(itm) {
@@ -657,21 +653,21 @@ export default class ReactAgenda extends Component {
 
       })
 
-      var classSet = classNames(cellClasses);
+      let classSet = classNames(cellClasses);
 
-      var splt = classSet.split(' ');
+      let splt = classSet.split(' ');
 
       splt = splt.filter(i => !i.includes('agenda__cell'))
       splt = splt.filter(i => !i.includes('undefined'))
 
-      var nwsplt = []
+      let nwsplt = []
       splt.forEach(function(value) {
         if (value.length > 0) {
           nwsplt.push(Colors[value])
         }
       });
 
-      var styles = {
+      let styles = {
         height: this.props.cellHeight + 'px'
       }
       if (splt.length > 1) {
@@ -687,10 +683,10 @@ export default class ReactAgenda extends Component {
         }
       }
 
-      var itemElement = cell.item.map(function(item, idx) {
+      let itemElement = cell.item.map(function(item, idx) {
 
-        var last1 = getLast(item.cellRefs);
-        var first1 = getFirst(item.cellRefs);
+        let last1 = getLast(item.cellRefs);
+        let first1 = getFirst(item.cellRefs);
 
         if (first1 === cell.cellRef ) {
 
@@ -734,34 +730,35 @@ export default class ReactAgenda extends Component {
 
     }.bind(this);
 
-    var renderMinuteCells = function(cell, i) {
+    let renderMinuteCells = function(cell, i) {
       if (cell.item[0] && !cell.item._id) {
         return renderItemCells(cell, i)
       }
 
-      var cellClasses = {
+      let cellClasses = {
         'agenda__cell': true
       };
 
       cellClasses[cell.item.classes] = true;
+      let last, first;
       if (cell.item.cellRefs) {
-        var last = getLast(cell.item.cellRefs);
-        var first = getFirst(cell.item.cellRefs);
+        last = getLast(cell.item.cellRefs);
+        first = getFirst(cell.item.cellRefs);
       }
 
-      var classSet = classNames(cellClasses);
+      let classSet = classNames(cellClasses);
 
-      var splt = classSet.split(' ');
+      let splt = classSet.split(' ');
       splt = splt.filter(i => !i.includes('agenda__cell'));
       splt = splt.filter(i => !i.includes('undefined'));
-      var nwsplt = [];
+      let nwsplt = [];
       splt.forEach(function(value) {
         if (value.length > 0) {
           nwsplt.push(Colors[value]);
         }
       });
 
-      var styles = {
+      let styles = {
         height: this.props.cellHeight + 'px'
       }
       if (splt.length > 1) {
@@ -811,7 +808,7 @@ export default class ReactAgenda extends Component {
       )
     };
 
-    var disablePrev = function(state) {
+    let disablePrev = function(state) {
       if (!state.hasOwnProperty('minDate')) {
         return false;
       }
@@ -819,7 +816,7 @@ export default class ReactAgenda extends Component {
       return state.date.toDate().getTime() === state.minDate.toDate().getTime();
     };
 
-    var disableNext = function(state) {
+    let disableNext = function(state) {
       if (!state.hasOwnProperty('maxDate')) {
         return false;
       }

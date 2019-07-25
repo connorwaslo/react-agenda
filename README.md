@@ -36,15 +36,15 @@ import { ReactAgenda , ReactAgendaCtrl , guid ,  Modal } from 'react-agenda';
 
 require('moment/locale/fr.js'); // this is important for traduction purpose
 
-var colors= {
+let colors= {
   'color-1':"rgba(102, 195, 131 , 1)" ,
   "color-2":"rgba(242, 177, 52, 1)" ,
   "color-3":"rgba(235, 85, 59, 1)"
 }
 
-var now = new Date();
+let now = new Date();
 
-var items = [
+let items = [
   {
    _id            :guid(),
     name          : 'Meeting , dev staff!',
@@ -173,7 +173,7 @@ edit={this.editEvent}  />
 This component is used to display the details of a single event in the agenda , by default , react-agenda uses the **ReactAgendaItem** [`source`](https://github.com/Revln9/react-agenda/blob/master/src/reactAgendaItem.js) component to render items , but you can replace it with your own component , check out the example below
 
 ```js
-var AgendaItem = function(props){
+let AgendaItem = function(props){
   console.log( ' item component props' , props)
   return <div style={{display:'block', position:'absolute' , background:'#FFF'}}>
         {props.item.name}

@@ -8,7 +8,7 @@ import moment from 'moment'
  * @returns {array}
  */
 export function swapArrayElements(items, indexFrom, indexTo) {
-  var item = items[indexTo];
+  let item = items[indexTo];
   items[indexTo] = items[indexFrom];
   items[indexFrom] = item;
   return items;
@@ -27,19 +27,19 @@ export function swapArrayElements(items, indexFrom, indexTo) {
 
 
 export function isMouseBeyond(mousePos, elementPos, elementSize, moveInMiddle) {
-  var breakPoint;
+  let breakPoint;
   if(moveInMiddle){
     breakPoint = elementSize / 2; //break point is set to the middle line of element
   }else{
     breakPoint = 0
   }
-  var mouseOverlap = mousePos - elementPos;
+  let mouseOverlap = mousePos - elementPos;
   return mouseOverlap > breakPoint;
 }
 
 
 export function getUnique(array){
-  var newAr = array.filter(function(val,ind) { return array.indexOf(val) == ind; })
+  let newAr = array.filter(function(val,ind) { return array.indexOf(val) == ind; })
   return newAr
 }
 export function getLast(array){
@@ -66,7 +66,7 @@ export function guid () {
 
 
 export function mapItems(itemsArray, rowsPerHour, timezone) {
-  var itemsMap = {};
+  let itemsMap = {};
 
   itemsArray = itemsArray.sort(function(a, b) {
     return a.startDateTime - b.startDateTime;
@@ -76,17 +76,17 @@ export function mapItems(itemsArray, rowsPerHour, timezone) {
     if (!item.startDateTime) {
       return false
     }
-    var interval = (60 / rowsPerHour);
-    var offsetMinutes = item.startDateTime.getMinutes() % interval;
-    var start = moment(item.startDateTime).subtract(offsetMinutes, "minutes").toDate();
-    var end = moment(item.endDateTime);
-    var duration = moment.duration(end.diff(start));
+    let interval = (60 / rowsPerHour);
+    let offsetMinutes = item.startDateTime.getMinutes() % interval;
+    let start = moment(item.startDateTime).subtract(offsetMinutes, "minutes").toDate();
+    let end = moment(item.endDateTime);
+    let duration = moment.duration(end.diff(start));
     item.duration = duration
-    var rows = Math.ceil(duration.asHours() / (interval / 60));
+    let rows = Math.ceil(duration.asHours() / (interval / 60));
 
-    var cellRefs = [];
-    for (var i = 0; i < rows; i++) {
-      var ref = moment(start).add(i * interval, 'minutes');
+    let cellRefs = [];
+    for (let i = 0; i < rows; i++) {
+      let ref = moment(start).add(i * interval, 'minutes');
       // if(timezone) {
       //     ref.tz(timezone);
       // }
@@ -96,7 +96,7 @@ export function mapItems(itemsArray, rowsPerHour, timezone) {
 
     cellRefs.forEach(function(ref) {
 
-      var newItem = Object.keys(item).filter(key => !key.includes('classes')).reduce((obj, key) => {
+      let newItem = Object.keys(item).filter(key => !key.includes('classes')).reduce((obj, key) => {
         obj[key] = item[key];
         return obj;
       }, {});
@@ -107,7 +107,7 @@ export function mapItems(itemsArray, rowsPerHour, timezone) {
       newItem.cellRefs = [getFirst(cellRefs), getLast(cellRefs)];
       if (itemsMap[ref]) {
         if (itemsMap[ref]._id) {
-          var newArr = [itemsMap[ref], newItem];
+          let newArr = [itemsMap[ref], newItem];
           itemsMap[ref] = newArr
           return
         }
