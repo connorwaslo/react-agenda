@@ -6,8 +6,8 @@ import classNames from 'classnames';
 import {guid, getUnique, getLast, getFirst , mapItems} from './helpers.js';
 import * as DragDropHelper from './dragAndDropHelper.js';
 
-let startSelect
-let endSelect
+let startSelect;
+let endSelect;
 let isDragging = false;
 let isMouseDown = false;
 let draggedElement;
@@ -42,8 +42,8 @@ export default class ReactAgenda extends Component {
       items: {},
       itemOverlayStyles: {},
       highlightedCells: [],
-      numberOfDays:4,
-      autoScaleNumber:0,
+      numberOfDays: 5,
+      autoScaleNumber: 0,
       focusedCell: null
     };
     this.handleBeforeUpdate = this.handleBeforeUpdate.bind(this);
@@ -74,29 +74,268 @@ export default class ReactAgenda extends Component {
     this.handleBeforeUpdate(this.props);
     if(this.props.autoScale){
       window.removeEventListener("resize", this.updateDimensions);
-
     }
+
     if(this.props.locale && this.props.locale != "en" ){
       moment.locale(this.props.locale);
     }
-
   }
 
   componentWillReceiveProps(props) {
-
     this.handleBeforeUpdate(props);
   }
 
   componentDidMount() {
-
-
     if(this.props.autoScale){
       window.addEventListener("resize", this.updateDimensions);
       this.updateDimensions();
+    }
+  }
 
+  render() {
+    let renderHeaderColumns = function(col, i) {
+      let headerLabel = moment(col);
+      headerLabel.locale(this.props.locale);
+      console.log('Col:', col);
+      return <th ref={"column-" + (i + 1)} key={"col-" + i} className="agenda__cell --head">
+        {col}
+      </th>
+
+    };
+
+    let renderBodyRows = function(row, i) {
+      if (i % this.props.rowsPerHour === 0 ) {
+        let ref = "hour-" + Math.floor(i / this.props.rowsPerHour);
+        let timeLabel = moment(row);
+        let differ = timeLabel.diff(timeNow, 'minutes')
+
+        timeLabel.locale(this.props.locale);
+        return (
+          <tr key={"row-" + i} ref={ref} draggable={false} className="agenda__row   --hour-start">
+            <td className={differ <= 60 && differ >= 0
+              ? 'disable-select agenda__cell --time-now'
+              : 'disable-select agenda__cell --time'} rowSpan={this.props.rowsPerHour}>{timeLabel.format('LT')}
+            </td>
+            {this.getMinuteCells(row).map(renderMinuteCells, this)}
+          </tr>
+        );
+      } else {
+        return (
+          <tr key={"row-" + i}>
+            {this.getMinuteCells(row).map(renderMinuteCells, this)}
+          </tr>
+        );
+      }
+    };
+
+    let itmName
+
+    let Colors = this.props.itemColors
+
+    let ItemComponent = this.props.itemComponent
+      ? this.props.itemComponent
+      : ReactAgendaItem;
+
+    let renderItemCells = function(cell, i) {
+
+      let cellClasses = {
+        'agenda__cell': true
+      };
+      cell['item'].forEach(function(itm) {
+
+        cellClasses[itm.classes] = true;
+
+      })
+
+      let classSet = classNames(cellClasses);
+
+      let splt = classSet.split(' ');
+
+      splt = splt.filter(i => !i.includes('agenda__cell'))
+      splt = splt.filter(i => !i.includes('undefined'))
+
+      let nwsplt = []
+      splt.forEach(function(value) {
+        if (value.length > 0) {
+          nwsplt.push(Colors[value])
+        }
+      });
+
+      let styles = {
+        height: this.props.cellHeight + 'px'
+      }
+      if (splt.length > 1) {
+
+        if (nwsplt[1] === nwsplt[2]) {
+
+          nwsplt.splice(1, 0, "rgb(255,255,255)");
+        }
+        nwsplt = nwsplt.join(' , ')
+        styles = {
+          "background": 'linear-gradient(-100deg,' + nwsplt + ')',
+          height: this.props.cellHeight + 'px'
+        }
+      }
+
+      let itemElement = cell.item.map(function(item, idx) {
+
+        let last1 = getLast(item.cellRefs);
+        let first1 = getFirst(item.cellRefs);
+
+        if (first1 === cell.cellRef ) {
+
+          return <div id={item._id} ref={cell.cellRef} key={idx} className="dragDiv" onDragStart={this.onDragStart} onDragEnd={this.onDragEnd} draggable="true">
+
+            {first1 === cell.cellRef
+              ? <i className="drag-handle-icon" aria-hidden="true"></i>
+              : ''}
+            {first1 === cell.cellRef
+              ? <ItemComponent item={item}
+                               parent={cell.cellRef}
+                               itemColors={Colors}
+                               edit={this.props.onItemEdit?this.editEvent:null}
+                               remove={this.props.onItemRemove?this.removeEvent:null}
+                               days={this.props.numberOfDays}/>
+              : ''}
+
+          </div>
+
+        }
+
+        if (last1 === cell.cellRef && this.props.onChangeDuration) {
+          return <div className="handler" style={{
+            marginLeft: 8 *(idx + 1) + 'px'
+          }} id={item._id} key={item._id} onDragStart={this.onDragHandlerStart} onDragEnd={this.onDragHandlerEnd} draggable="true">
+            <i className="resize-handle-icon"></i>
+          </div>
+        }
+
+        return '';
+
+      }.bind(this));
+
+      return (
+
+        <td ref={cell.cellRef} key={"cell-" + i} className={classSet} style={styles} id={cell.cellRef}>
+
+          {itemElement}
+        </td>
+      )
+
+    }.bind(this);
+
+    let renderMinuteCells = function(cell, i) {
+      if (cell.item[0] && !cell.item._id) {
+        return renderItemCells(cell, i)
+      }
+
+      let cellClasses = {
+        'agenda__cell': true
+      };
+
+      cellClasses[cell.item.classes] = true;
+      let last, first;
+      if (cell.item.cellRefs) {
+        last = getLast(cell.item.cellRefs);
+        first = getFirst(cell.item.cellRefs);
+      }
+
+      let classSet = classNames(cellClasses);
+
+      let splt = classSet.split(' ');
+      splt = splt.filter(i => !i.includes('agenda__cell'));
+      splt = splt.filter(i => !i.includes('undefined'));
+      let nwsplt = [];
+      splt.forEach(function(value) {
+        if (value.length > 0) {
+          nwsplt.push(Colors[value]);
+        }
+      });
+
+      let styles = {
+        height: this.props.cellHeight + 'px'
+      }
+      if (splt.length > 1) {
+        nwsplt = nwsplt.join(' , ')
+        styles = {
+          "background": 'linear-gradient(to left,' + nwsplt + ')',
+          height: this.props.cellHeight + 'px'
+        }
+      }
+
+      if (splt.length == 1) {
+        styles = {
+          "background": nwsplt[0],
+          height: this.props.cellHeight + 'px'
+        }
+      }
+
+      return (
+        <td ref={cell.cellRef} key={"cell-" + i} className={classSet} style={styles} id={cell.cellRef}>
+
+          {first === cell.cellRef
+            ? <div id={cell.item._id} ref={cell.item._id} className="dragDiv" onDragStart={this.onDragStart} onDragEnd={this.onDragEnd} draggable="true">
+
+              {first === cell.cellRef && this.props.onChangeEvent
+                ? <i className="drag-handle-icon" aria-hidden="true"></i>
+                : ''}
+              {first === cell.cellRef
+                ? <ItemComponent item={cell.item}
+                                 parent={cell.cellRef}
+                                 itemColors={Colors}
+                                 edit={this.props.onItemEdit?this.editEvent:null}
+                                 remove={this.props.onItemRemove?this.removeEvent:null}
+                                 days={this.props.numberOfDays}/>
+                : ''}
+
+            </div>
+            : ''}
+
+          {last === cell.cellRef && this.props.onChangeDuration
+            ? <div className="handler" id={cell.item._id} onDragStart={this.onDragHandlerStart} onDragEnd={this.onDragHandlerEnd} draggable="true">
+              <i className="resize-handle-icon"></i>
+            </div>
+
+            : ''}
+
+        </td>
+      )
+    };
+
+    let title = this.props.title;
+    if (!title) {
+      title = 'Temp Schedule';
     }
 
+    return (
+      <div className="agenda" id="agenda-wrapper">
+        <div className="agenda__table --header">
+          <table>
+            <thead>
+            <tr>
+              <th ref="column-0" className="agenda__cell --controls">
+                <div className="agenda-controls-layout">
+                  <h1>{title}</h1>
+                </div>
+              </th>
+              {this.getHeaderColumns(this.props.view).map(renderHeaderColumns, this)}
+            </tr>
+            </thead>
+          </table>
+        </div>
 
+        <div ref="agendaScrollContainer" className="agenda__table --body" style={{
+          position: 'relative'
+        }}>
+          <table cellSpacing="0" cellPadding="0">
+
+            <tbody onMouseDown={this.handleAllClickStarts} onDragEnter={this.onDragEnter} onDragOver={this.onDragOver} onMouseUp={this.handleAllClickEnds} onMouseOver={this.handleMouseOver}>
+            {this.getBodyRows().map(renderBodyRows, this)}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    );
   }
 
   updateDimensions() {
@@ -599,262 +838,6 @@ export default class ReactAgenda extends Component {
       this.props.onItemRemove(newItems, item);
     }
   }
-
-  render() {
-
-    let renderHeaderColumns = function(col, i) {
-      return <th ref={"column-" + (i + 1)} key={"col-" + i} className="agenda__cell --head">
-        {col}
-      </th>
-
-    };
-
-    let renderBodyRows = function(row, i) {
-      if (i % this.props.rowsPerHour === 0 ) {
-        let ref = "hour-" + Math.floor(i / this.props.rowsPerHour);
-        let timeLabel = moment(row);
-        let differ = timeLabel.diff(timeNow, 'minutes')
-
-        timeLabel.locale(this.props.locale);
-        return (
-          <tr key={"row-" + i} ref={ref} draggable={false} className="agenda__row   --hour-start">
-          <td className={differ <= 60 && differ >= 0
-              ? 'disable-select agenda__cell --time-now'
-              : 'disable-select agenda__cell --time'} rowSpan={this.props.rowsPerHour}>{timeLabel.format('LT')}
-            </td>
-            {this.getMinuteCells(row).map(renderMinuteCells, this)}
-          </tr>
-        );
-      } else {
-        return (
-          <tr key={"row-" + i}>
-            {this.getMinuteCells(row).map(renderMinuteCells, this)}
-          </tr>
-        );
-      }
-    };
-
-    let itmName
-
-    let Colors = this.props.itemColors
-
-    let ItemComponent = this.props.itemComponent
-      ? this.props.itemComponent
-      : ReactAgendaItem;
-
-    let renderItemCells = function(cell, i) {
-
-      let cellClasses = {
-        'agenda__cell': true
-      };
-      cell['item'].forEach(function(itm) {
-
-        cellClasses[itm.classes] = true;
-
-      })
-
-      let classSet = classNames(cellClasses);
-
-      let splt = classSet.split(' ');
-
-      splt = splt.filter(i => !i.includes('agenda__cell'))
-      splt = splt.filter(i => !i.includes('undefined'))
-
-      let nwsplt = []
-      splt.forEach(function(value) {
-        if (value.length > 0) {
-          nwsplt.push(Colors[value])
-        }
-      });
-
-      let styles = {
-        height: this.props.cellHeight + 'px'
-      }
-      if (splt.length > 1) {
-
-        if (nwsplt[1] === nwsplt[2]) {
-
-          nwsplt.splice(1, 0, "rgb(255,255,255)");
-        }
-        nwsplt = nwsplt.join(' , ')
-        styles = {
-          "background": 'linear-gradient(-100deg,' + nwsplt + ')',
-          height: this.props.cellHeight + 'px'
-        }
-      }
-
-      let itemElement = cell.item.map(function(item, idx) {
-
-        let last1 = getLast(item.cellRefs);
-        let first1 = getFirst(item.cellRefs);
-
-        if (first1 === cell.cellRef ) {
-
-          return <div id={item._id} ref={cell.cellRef} key={idx} className="dragDiv" onDragStart={this.onDragStart} onDragEnd={this.onDragEnd} draggable="true">
-
-            {first1 === cell.cellRef
-              ? <i className="drag-handle-icon" aria-hidden="true"></i>
-              : ''}
-            {first1 === cell.cellRef
-              ? <ItemComponent item={item}
-                parent={cell.cellRef}
-                itemColors={Colors}
-                edit={this.props.onItemEdit?this.editEvent:null}
-                remove={this.props.onItemRemove?this.removeEvent:null}
-                days={this.props.numberOfDays}/>
-              : ''}
-
-          </div>
-
-        }
-
-        if (last1 === cell.cellRef && this.props.onChangeDuration) {
-          return <div className="handler" style={{
-            marginLeft: 8 *(idx + 1) + 'px'
-          }} id={item._id} key={item._id} onDragStart={this.onDragHandlerStart} onDragEnd={this.onDragHandlerEnd} draggable="true">
-            <i className="resize-handle-icon"></i>
-          </div>
-        }
-
-        return '';
-
-      }.bind(this));
-
-      return (
-
-        <td ref={cell.cellRef} key={"cell-" + i} className={classSet} style={styles} id={cell.cellRef}>
-
-          {itemElement}
-        </td>
-      )
-
-    }.bind(this);
-
-    let renderMinuteCells = function(cell, i) {
-      if (cell.item[0] && !cell.item._id) {
-        return renderItemCells(cell, i)
-      }
-
-      let cellClasses = {
-        'agenda__cell': true
-      };
-
-      cellClasses[cell.item.classes] = true;
-      let last, first;
-      if (cell.item.cellRefs) {
-        last = getLast(cell.item.cellRefs);
-        first = getFirst(cell.item.cellRefs);
-      }
-
-      let classSet = classNames(cellClasses);
-
-      let splt = classSet.split(' ');
-      splt = splt.filter(i => !i.includes('agenda__cell'));
-      splt = splt.filter(i => !i.includes('undefined'));
-      let nwsplt = [];
-      splt.forEach(function(value) {
-        if (value.length > 0) {
-          nwsplt.push(Colors[value]);
-        }
-      });
-
-      let styles = {
-        height: this.props.cellHeight + 'px'
-      }
-      if (splt.length > 1) {
-        nwsplt = nwsplt.join(' , ')
-        styles = {
-          "background": 'linear-gradient(to left,' + nwsplt + ')',
-          height: this.props.cellHeight + 'px'
-        }
-      }
-
-      if (splt.length == 1) {
-        styles = {
-          "background": nwsplt[0],
-          height: this.props.cellHeight + 'px'
-        }
-      }
-
-      return (
-        <td ref={cell.cellRef} key={"cell-" + i} className={classSet} style={styles} id={cell.cellRef}>
-
-          {first === cell.cellRef
-            ? <div id={cell.item._id} ref={cell.item._id} className="dragDiv" onDragStart={this.onDragStart} onDragEnd={this.onDragEnd} draggable="true">
-
-                {first === cell.cellRef && this.props.onChangeEvent
-                  ? <i className="drag-handle-icon" aria-hidden="true"></i>
-                  : ''}
-                {first === cell.cellRef
-                  ? <ItemComponent item={cell.item}
-                    parent={cell.cellRef}
-                    itemColors={Colors}
-                    edit={this.props.onItemEdit?this.editEvent:null}
-                    remove={this.props.onItemRemove?this.removeEvent:null}
-                    days={this.props.numberOfDays}/>
-                  : ''}
-
-              </div>
-            : ''}
-
-          {last === cell.cellRef && this.props.onChangeDuration
-            ? <div className="handler" id={cell.item._id} onDragStart={this.onDragHandlerStart} onDragEnd={this.onDragHandlerEnd} draggable="true">
-                <i className="resize-handle-icon"></i>
-              </div>
-
-            : ''}
-
-        </td>
-      )
-    };
-
-    let disablePrev = function(state) {
-      if (!state.hasOwnProperty('minDate')) {
-        return false;
-      }
-
-      return state.date.toDate().getTime() === state.minDate.toDate().getTime();
-    };
-
-    let disableNext = function(state) {
-      if (!state.hasOwnProperty('maxDate')) {
-        return false;
-      }
-
-      return state.date.toDate().getTime() === state.maxDate.toDate().getTime();
-    };
-
-    return (
-      <div className="agenda" id="agenda-wrapper">
-        <div className="agenda__table --header">
-          <table>
-            <thead>
-              <tr>
-                <th ref="column-0" className="agenda__cell --controls">
-                  <div className="agenda-controls-layout">
-                  {/*   Todo: Fill this with Schedule title?   */}
-                  </div>
-                </th>
-                {this.getHeaderColumns(this.props.view).map(renderHeaderColumns, this)}
-              </tr>
-            </thead>
-          </table>
-        </div>
-
-        <div ref="agendaScrollContainer" className="agenda__table --body" style={{
-          position: 'relative'
-        }}>
-          <table cellSpacing="0" cellPadding="0">
-
-            <tbody onMouseDown={this.handleAllClickStarts} onDragEnter={this.onDragEnter} onDragOver={this.onDragOver} onMouseUp={this.handleAllClickEnds} onMouseOver={this.handleMouseOver}>
-              {this.getBodyRows().map(renderBodyRows, this)}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    );
-  }
-
 };
 
 ReactAgenda.propTypes = {
