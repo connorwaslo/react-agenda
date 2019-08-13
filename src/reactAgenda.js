@@ -6,6 +6,7 @@ import classNames from 'classnames';
 import {guid, getUnique, getLast, getFirst , mapItems} from './helpers.js';
 import {Button, Menu, MenuItem} from "@material-ui/core";
 import * as DragDropHelper from './dragAndDropHelper.js';
+import TextField from "@material-ui/core/TextField";
 
 moment.suppressDeprecationWarnings = true;
 
@@ -41,6 +42,7 @@ export default class ReactAgenda extends Component {
   constructor(props) {
     super(props);
     this.state = {
+      name: props.name,
       date: moment(),
       items: {},
       itemOverlayStyles: {},
@@ -71,6 +73,8 @@ export default class ReactAgenda extends Component {
     this.updateDimensions = this.updateDimensions.bind(this);
     this._openMenu = this._openMenu.bind(this);
     this._closeMenu = this._closeMenu.bind(this);
+    this._editName = this._editName.bind(this);
+    this._createNewSchedule = this._createNewSchedule.bind(this);
   }
 
   /********************/
@@ -87,8 +91,17 @@ export default class ReactAgenda extends Component {
     }
   }
 
-  componentWillReceiveProps(props) {
-    this.handleBeforeUpdate(props);
+  componentWillReceiveProps(nextProps) {
+    this.handleBeforeUpdate(nextProps);
+
+    // Update text
+    console.log('Next schedule name:', nextProps.name);
+    if (nextProps.name !== this.state.name) {
+      console.log('Next:', nextProps.name, '|', this.state.name);
+      this.setState({
+        name: nextProps.name
+      });
+    }
   }
 
   componentDidMount() {
@@ -310,7 +323,16 @@ export default class ReactAgenda extends Component {
     return (
       <div className="agenda" id="agenda-wrapper">
         <div className="agenda__table --header">
-          <h2>{this.props.title}</h2>
+          <form onSubmit={this._editName}>
+            <TextField
+              id='standard-bare'
+              defaultValue={this.props.name}
+              value={this.state.name}
+              onChange={(e) => this.setState({name: e.target.value})}
+              margin='normal'
+              inputProps={{'aria-label': 'bare'}}
+            />
+          </form>
           <table>
             <thead>
             <tr>
@@ -353,10 +375,12 @@ export default class ReactAgenda extends Component {
     /*return (
       <MenuItem onClick={this._closeMenu}>PlaceHolder</MenuItem>
     );*/
-    let schedTitles = Object.keys(allSchedules);
-    let menuItems = [<MenuItem key={0} onClick={this._createNewSchedule.bind(this)}>Create New</MenuItem>];
-    schedTitles.forEach((title, i) => {
-      menuItems.push(<MenuItem key={i + 1} onClick={this._closeMenu}>{title}</MenuItem>)
+    let schedNames = allSchedules.map(schedule => {
+      return schedule.name
+    });
+    let menuItems = [<MenuItem key={0} onClick={this._createNewSchedule}>Create New</MenuItem>];
+    schedNames.forEach((name, i) => {
+      menuItems.push(<MenuItem key={i + 1} onClick={() => this._selectSchedule(i)}>{name}</MenuItem>)
     });
     return menuItems.map(item => (
       item
@@ -379,6 +403,18 @@ export default class ReactAgenda extends Component {
       anchorEl: null
     });
   };
+
+  _selectSchedule(index) {
+    this._closeMenu();
+    this.props.selectSchedule(index);
+  }
+
+  _editName(event) {
+    event.preventDefault();
+
+    console.log('New Name:', this.state.name);
+    this.props.editName(this.state.name);
+  }
 
   updateDimensions() {
     let width = Math.round((document.getElementById('agenda-wrapper').offsetWidth / 150 ) - 1)
