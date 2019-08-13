@@ -95,9 +95,7 @@ export default class ReactAgenda extends Component {
     this.handleBeforeUpdate(nextProps);
 
     // Update text
-    console.log('Next schedule name:', nextProps.name);
     if (nextProps.name !== this.state.name) {
-      console.log('Next:', nextProps.name, '|', this.state.name);
       this.setState({
         name: nextProps.name
       });
@@ -326,7 +324,6 @@ export default class ReactAgenda extends Component {
           <form onSubmit={this._editName}>
             <TextField
               id='standard-bare'
-              defaultValue={this.props.name}
               value={this.state.name}
               onChange={(e) => this.setState({name: e.target.value})}
               margin='normal'
