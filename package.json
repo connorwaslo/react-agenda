@@ -10,10 +10,11 @@
     "react-dom": "^15.5.0"
   },
   "dependencies": {
+    "@material-ui/core": "^4.3.2",
     "classnames": "^2.2.6",
     "drag-drop-touch-polyfill": "https://github.com/Revln9/drag-drop-touch-polyfill-ES5-compiled.git",
-    "react-datetime": "^2.16.3",
-    "prop-types": "^15.6.2"
+    "prop-types": "^15.6.2",
+    "react-datetime": "^2.16.3"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",

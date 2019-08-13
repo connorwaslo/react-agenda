@@ -1,10 +1,13 @@
 import React, {Component} from 'react';
 import PropTypes from 'prop-types';
-import moment from 'moment'
+import moment from 'moment';
 import ReactAgendaItem from './reactAgendaItem';
 import classNames from 'classnames';
 import {guid, getUnique, getLast, getFirst , mapItems} from './helpers.js';
+import {Button, Menu, MenuItem} from "@material-ui/core";
 import * as DragDropHelper from './dragAndDropHelper.js';
+
+moment.suppressDeprecationWarnings = true;
 
 let startSelect;
 let endSelect;
@@ -44,7 +47,8 @@ export default class ReactAgenda extends Component {
       highlightedCells: [],
       numberOfDays: 5,
       autoScaleNumber: 0,
-      focusedCell: null
+      focusedCell: null,
+      anchorEl: null
     };
     this.handleBeforeUpdate = this.handleBeforeUpdate.bind(this);
     this.handleMouseClick = this.handleMouseClick.bind(this);
@@ -65,6 +69,8 @@ export default class ReactAgenda extends Component {
     this.duplicateEvent = this.duplicateEvent.bind(this);
     this.resizeEvent = this.resizeEvent.bind(this);
     this.updateDimensions = this.updateDimensions.bind(this);
+    this._openMenu = this._openMenu.bind(this);
+    this._closeMenu = this._closeMenu.bind(this);
   }
 
   /********************/
@@ -96,7 +102,6 @@ export default class ReactAgenda extends Component {
     let renderHeaderColumns = function(col, i) {
       let headerLabel = moment(col);
       headerLabel.locale(this.props.locale);
-      console.log('Col:', col);
       return <th ref={"column-" + (i + 1)} key={"col-" + i} className="agenda__cell --head">
         {col}
       </th>
@@ -302,21 +307,25 @@ export default class ReactAgenda extends Component {
       )
     };
 
-    let title = this.props.title;
-    if (!title) {
-      title = 'Temp Schedule';
-    }
-
     return (
       <div className="agenda" id="agenda-wrapper">
         <div className="agenda__table --header">
+          <h2>{this.props.title}</h2>
           <table>
             <thead>
             <tr>
               <th ref="column-0" className="agenda__cell --controls">
-                <div className="agenda-controls-layout">
-                  <h1>{title}</h1>
-                </div>
+                <Button aria-controls='simple-menu' aria-haspopup='true' onClick={this._openMenu}>
+                  Menu
+                </Button>
+                <Menu
+                  anchorEl={this.state.anchorEl}
+                  keepMounted
+                  open={Boolean(this.state.anchorEl)}
+                  onClose={this._closeMenu}>
+
+                  {this._renderMenuOptions()}
+                </Menu>
               </th>
               {this.getHeaderColumns(this.props.view).map(renderHeaderColumns, this)}
             </tr>
@@ -337,6 +346,39 @@ export default class ReactAgenda extends Component {
       </div>
     );
   }
+
+  _renderMenuOptions() {
+    const {allSchedules} = this.props;
+
+    /*return (
+      <MenuItem onClick={this._closeMenu}>PlaceHolder</MenuItem>
+    );*/
+    let schedTitles = Object.keys(allSchedules);
+    let menuItems = [<MenuItem key={0} onClick={this._createNewSchedule.bind(this)}>Create New</MenuItem>];
+    schedTitles.forEach((title, i) => {
+      menuItems.push(<MenuItem key={i + 1} onClick={this._closeMenu}>{title}</MenuItem>)
+    });
+    return menuItems.map(item => (
+      item
+    ));
+  }
+
+  _createNewSchedule() {
+    this.props.createSchedule();
+    this._closeMenu();
+  }
+
+  _openMenu(e) {
+    this.setState({
+      anchorEl: e.currentTarget
+    });
+  };
+
+  _closeMenu() {
+    this.setState({
+      anchorEl: null
+    });
+  };
 
   updateDimensions() {
     let width = Math.round((document.getElementById('agenda-wrapper').offsetWidth / 150 ) - 1)
